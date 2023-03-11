@@ -1,0 +1,83 @@
+SQL> --- drop table
+SQL> DROP TABLE TIM_product_supplier cascade constraints;
+DROP TABLE TIM_product_supplier cascade constraints
+           *
+ERROR at line 1:
+ORA-00942: table or view does not exist 
+
+
+SQL> DROP TABLE TIM_product cascade constraints;
+DROP TABLE TIM_product cascade constraints
+           *
+ERROR at line 1:
+ORA-00942: table or view does not exist 
+
+
+SQL> DROP TABLE TIM_product_review cascade constraints;
+DROP TABLE TIM_product_review cascade constraints
+           *
+ERROR at line 1:
+ORA-00942: table or view does not exist 
+
+
+SQL> DROP TABLE TIM_order cascade constraints;
+DROP TABLE TIM_order cascade constraints
+           *
+ERROR at line 1:
+ORA-00942: table or view does not exist 
+
+
+SQL> DROP TABLE TIM_supplier cascade constraints;
+DROP TABLE TIM_supplier cascade constraints
+           *
+ERROR at line 1:
+ORA-00942: table or view does not exist 
+
+
+SQL> DROP TABLE TIM_category cascade constraints;
+DROP TABLE TIM_category cascade constraints
+           *
+ERROR at line 1:
+ORA-00942: table or view does not exist 
+
+
+SQL> DROP TABLE TIM_customer cascade constraints;
+
+Table dropped.
+
+SQL> -- create tables
+SQL> CREATE TABLE TIM_customer(
+  2  	 customer_number NUMBER CONSTRAINT SYS_CUST_PK PRIMARY KEY,
+  3  	 customer_street_address VARCHAR2(20) NOT NULL,
+  4  	 customer_prov CHAR(2) NOT NULL
+  5  	     CONSTRAINT SYS_CUP_CK CHECK(customer_prov IN('AB','BC','MB','NS','NT','ON','PE','QC','SK','YT','NL','NB')),
+  6  	 customer_postal_code CHAR(6) NOT NULL
+  7  	     CONSTRAINT SYS_CPC_CK CHECK(regexp_like(customer_postal_code,'[A-Z][0-9][A-Z][0-9][A-Z][0-9]')),
+  8  	 customer_phone CHAR(12) NOT NULL
+  9  	     CONSTRAINT SYS_CP_CK CHECK (regexp_like(customer_phone,'[0-9]{3}\.[0-9]{3}\.[0-9]{4}')),
+ 10  	 customer_email_address VARCHAR2(20) NOT NULL
+ 11  	     CONSTRAINT SYS_CE_CK CHECK(regexp_like(customer_email_address,'^(?:(?!.*?[.]{2})[a-zA-Z0-9](?:[a-zA-Z0-9.+!%-]{1,64}|)|\"[a-zA-Z0-9.+!% -]{1,64}\")@[a-zA-Z0-9][a-zA-Z0-9.-]+(.[a-z]{2,}|.[0-9]{1,})$')),
+ 12  	 CONSTRAINT sys_UCE_UK UNIQUE(customer_email_address),
+ 13  	 is_timber_member NUMBER(1) NOT NULL
+ 14  	     CONSTRAINT SYS_ISTM_CK CHECK(is_timber_member IN(0,1)));
+
+Table created.
+
+SQL> CREATE TABLE TIM_order(
+  2  	 order# NUMBER,
+  3  	 order_date DATE NOT NULL,
+  4  	 order_delivery_date DATE NOT NULL,
+  5  	 shipping_amount NUMBER(10,2),
+  6  	 tax_amount NUMBER(10,2),
+  7  	 shipping_prov CHAR(2) NOT NULL
+  8  	     CONSTRAINT SYS_O_CK CHECK(shipping_prov IN('AB','BC','MB','NS','NT','ON','PE','QC','SK','YT','NL','NB')),
+  9  	 customer_number NUMBER);
+
+Table created.
+
+SQL> ALTER TABLE TIM_order
+  2  	 ADD CONSTRAINT SYS_O_FK FOREIGN KEY(customer_number) REFERENCES TIM_customer(customer_number);
+
+Table altered.
+
+SQL> spool off
