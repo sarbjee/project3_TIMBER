@@ -83,8 +83,12 @@ CREATE TABLE TIM_product_review(
     review# NUMBER CONSTRAINT SYS_REV_PK PRIMARY KEY,
     rating NUMBER NOT NULL
         CONSTRAINT SYS_RATING_CK CHECK(rating between 1 and 5),
-    comments VARCHAR2(100),
+    comments VARCHAR2(500),
     review_date DATE NOT NULL,
     product# NUMBER CONSTRAINT SYS_PPV_PK REFERENCES TIM_product(product#),
     customer# NUMBER CONSTRAINT SYS_CPR_PK REFERENCES TIM_customer(customer#));
+CREATE TABLE TIM_product_order(
+    product# NUMBER CONSTRAINT SYS_PPORDER_FK REFERENCES TIM_product(product#),
+    order# NUMBER CONSTRAINT SYS_ORDER_ORDER_FK REFERENCES TIM_order(order#),
+    CONSTRAINT SYS_PRODUCTORDER_PO_PK PRIMARY KEY(product#,order#));
 spool off
