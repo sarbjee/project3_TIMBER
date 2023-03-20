@@ -1,0 +1,178 @@
+SQL> --- drop table
+SQL> DROP TABLE TIM_product_order cascade constraints;
+DROP TABLE TIM_product_order cascade constraints
+           *
+ERROR at line 1:
+ORA-00942: table or view does not exist 
+
+
+SQL> DROP TABLE TIM_product_supplier cascade constraints;
+DROP TABLE TIM_product_supplier cascade constraints
+           *
+ERROR at line 1:
+ORA-00942: table or view does not exist 
+
+
+SQL> DROP TABLE TIM_product cascade constraints;
+
+Table dropped.
+
+SQL> DROP TABLE TIM_product_review cascade constraints;
+DROP TABLE TIM_product_review cascade constraints
+           *
+ERROR at line 1:
+ORA-00942: table or view does not exist 
+
+
+SQL> DROP TABLE TIM_order cascade constraints;
+DROP TABLE TIM_order cascade constraints
+           *
+ERROR at line 1:
+ORA-00942: table or view does not exist 
+
+
+SQL> DROP TABLE TIM_supplier cascade constraints;
+DROP TABLE TIM_supplier cascade constraints
+           *
+ERROR at line 1:
+ORA-00942: table or view does not exist 
+
+
+SQL> DROP TABLE TIM_category cascade constraints;
+
+Table dropped.
+
+SQL> DROP TABLE TIM_customer cascade constraints;
+DROP TABLE TIM_customer cascade constraints
+           *
+ERROR at line 1:
+ORA-00942: table or view does not exist 
+
+
+SQL> DROP TABLE TIM_parent_category cascade constraints;
+
+Table dropped.
+
+SQL> rem
+SQL> -- create tables
+SQL> CREATE TABLE TIM_customer(
+  2  	 customer# NUMBER CONSTRAINT SYS_CUST_PK PRIMARY KEY,
+  3  	 customer_street_address VARCHAR2(200) NOT NULL,
+  4  	 customer_prov CHAR(2) NOT NULL
+  5  	     CONSTRAINT SYS_CUP_CK CHECK(customer_prov IN('AB','BC','MB','NS','NT','ON','PE','QC','SK','YT','NL','NB')),
+  6  	 customer_postal_code CHAR(6) NOT NULL
+  7  	     CONSTRAINT SYS_CPC_CK CHECK(regexp_like(customer_postal_code,'[A-Z][0-9][A-Z][0-9][A-Z][0-9]')),
+  8  	 customer_phone CHAR(12) NOT NULL
+  9  	     CONSTRAINT SYS_CP_CK CHECK (regexp_like(customer_phone,'[0-9]{3}\.[0-9]{3}\.[0-9]{4}')),
+ 10  	 customer_email_address VARCHAR2(60) NOT NULL
+ 11  	     CONSTRAINT SYS_CE_CK CHECK(regexp_like(customer_email_address,'[a-zA-Z0-9_\-]+@([a-zA-Z0-9_\-]+\.)+(com|org|edu|nz|au])')),
+ 12  	 customer_city VARCHAR2(20) NOT NULL,
+ 13  	 istimbermember NUMBER(1) NOT NULL
+ 14  	     CONSTRAINT SYS_ISTM_CK CHECK(istimbermember IN(0,1)),
+ 15  	 CONSTRAINT sys_UCE_UK UNIQUE(customer_email_address));
+
+Table created.
+
+SQL> CREATE TABLE TIM_parent_category(
+  2  	 parent_category_number NUMBER CONSTRAINT SYS_PCN_PK PRIMARY KEY
+  3  );
+
+Table created.
+
+SQL> rem
+SQL> CREATE TABLE TIM_order(
+  2  	 order# NUMBER,
+  3  	 order_date DATE NOT NULL,
+  4  	 order_delivery_date DATE NOT NULL,
+  5  	 shipping_amount NUMBER(10,2),
+  6  	 tax_amount NUMBER(10,2),
+  7  	 order_items NUMBER NOT NULL
+  8  	     CONSTRAINT SYS_ITEMS_CK CHECK(order_items>0),
+  9  	 shipping_prov CHAR(2) NOT NULL
+ 10  	     CONSTRAINT SYS_O_CK CHECK(shipping_prov IN('AB','BC','MB','NS','NT','ON','PE','QC','SK','YT','NL','NB')),
+ 11  	 customer_number NUMBER);
+
+Table created.
+
+SQL> rem
+SQL> ALTER TABLE TIM_order
+  2  	 ADD CONSTRAINT SYS_O_FK FOREIGN KEY(customer_number) REFERENCES TIM_customer(customer#)
+  3  	 ADD CONSTRAINT sys_OR_PK PRIMARY KEY(order#);
+
+Table altered.
+
+SQL> rem
+SQL> CREATE TABLE TIM_category(
+  2  	 category# NUMBER CONSTRAINT SYS_CAT_PK PRIMARY KEY,
+  3  	 category_description VARCHAR2(50) NOT NULL,
+  4  	 category_parent# NUMBER CONSTRAINT SYS_PCC_PK REFERENCES TIM_parent_category(parent_category_number));
+
+Table created.
+
+SQL> rem
+SQL> CREATE TABLE TIM_supplier(
+  2  	 supplier# NUMBER CONSTRAINT SYS_SUPP_PK PRIMARY KEY,
+  3  	 supplier_name VARCHAR2(20) NOT NULL,
+  4  	 supplier_email VARCHAR2(50) NOT NULL
+  5  	     CONSTRAINT SYS_S_CK CHECK(regexp_like(supplier_email,'[a-zA-Z0-9_\-]+@([a-zA-Z0-9_\-]+\.)+(com|org|edu|nz|au])')),
+  6  	 CONSTRAINT SYS_SE_UK UNIQUE(supplier_email),
+  7  	 supplier_prov CHAR(2) NOT NULL
+  8  	     CONSTRAINT SYS_SUPP_CK CHECK(supplier_prov IN('AB','BC','MB','NS','NT','ON','PE','QC','SK','YT','NL','NB')),
+  9  	 supplier_city VARCHAR2(20) NOT NULL);
+
+Table created.
+
+SQL> rem
+SQL> CREATE TABLE TIM_product(
+  2  	 product# NUMBER CONSTRAINT SYS_PRO_PK PRIMARY KEY,
+  3  	 product_title VARCHAR2(100) NOT NULL,
+  4  	 product_description VARCHAR2(500) NOT NULL,
+  5  	 product_price NUMBER(10,2) NOT NULL
+  6  	     CONSTRAINT SYS_PP_CK CHECK(product_price > 0),
+  7  	 product_weight NUMBER(3,2) NOT NULL
+  8  	     CONSTRAINT SYS_PW_CK CHECK(product_weight > 0),
+  9  	 istaxexempt CHAR(1) NOT NULL
+ 10  	     CONSTRAINT SYS_TE_CK CHECK(istaxexempt IN (0,1)),
+ 11  	 category# NUMBER CONSTRAINT SYS_PC_PK REFERENCES TIM_category(category#));
+
+Table created.
+
+SQL> rem
+SQL> CREATE TABLE TIM_product_order(
+  2  	 order# NUMBER CONSTRAINT SYS_ORDER_PROORDER_FK REFERENCES TIM_order(order#),
+  3  	 product# NUMBER CONSTRAINT SYS_PRO_PORD_FK REFERENCES TIM_product(product#),
+  4  	 CONSTRAINT SYS_CUSPRO_PRODOR_PK PRIMARY KEY(order#,product#)
+  5  );
+
+Table created.
+
+SQL> CREATE TABLE TIM_product_supplier(
+  2  	 supplier# NUMBER CONSTRAINT SYS_SPS_PK REFERENCES TIM_supplier(supplier#),
+  3  	 product# NUMBER CONSTRAINT SYS_PPS_PK REFERENCES TIM_product(product#),
+  4  	 quantity_on_hand NUMBER NOT NULL,
+  5  	 days_delivery NUMBER NOT NULL);
+
+Table created.
+
+SQL> rem
+SQL> ALTER TABLE TIM_product_supplier
+  2  	 ADD CONSTRAINT SYS_SSPP_PK PRIMARY KEY(supplier#,product#);
+
+Table altered.
+
+SQL> CREATE TABLE TIM_product_review(
+  2  	 review# NUMBER CONSTRAINT SYS_REV_PK PRIMARY KEY,
+  3  	 rating NUMBER NOT NULL
+  4  	     CONSTRAINT SYS_RATING_CK CHECK(rating between 1 and 5),
+  5  	 comments VARCHAR2(500),
+  6  	 review_date DATE NOT NULL,
+  7  	 product# NUMBER CONSTRAINT SYS_PPV_PK REFERENCES TIM_product(product#),
+  8  	 customer# NUMBER CONSTRAINT SYS_CPR_PK REFERENCES TIM_customer(customer#));
+
+Table created.
+
+SQL> commit;
+
+Commit complete.
+
+SQL> spool off

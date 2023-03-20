@@ -1,6 +1,7 @@
 set echo on
 spool C:\cprg250s\TIMBER\project3_TIMBER\loadtimberOutput.txt
 --- drop table 
+DROP TABLE TIM_product_order cascade constraints;
 DROP TABLE TIM_product_supplier cascade constraints;
 DROP TABLE TIM_product cascade constraints;
 DROP TABLE TIM_product_review cascade constraints;
@@ -13,18 +14,19 @@ rem
 -- create tables
 CREATE TABLE TIM_customer(
     customer# NUMBER CONSTRAINT SYS_CUST_PK PRIMARY KEY,
-    customer_street_address VARCHAR2(20) NOT NULL,
+    customer_street_address VARCHAR2(200) NOT NULL,
     customer_prov CHAR(2) NOT NULL
         CONSTRAINT SYS_CUP_CK CHECK(customer_prov IN('AB','BC','MB','NS','NT','ON','PE','QC','SK','YT','NL','NB')),
     customer_postal_code CHAR(6) NOT NULL
         CONSTRAINT SYS_CPC_CK CHECK(regexp_like(customer_postal_code,'[A-Z][0-9][A-Z][0-9][A-Z][0-9]')),
     customer_phone CHAR(12) NOT NULL
         CONSTRAINT SYS_CP_CK CHECK (regexp_like(customer_phone,'[0-9]{3}\.[0-9]{3}\.[0-9]{4}')),
-    customer_email_address VARCHAR2(20) NOT NULL
-        CONSTRAINT SYS_CE_CK CHECK(regexp_like(customer_email_address,'^(?:(?!.*?[.]{2})[a-zA-Z0-9](?:[a-zA-Z0-9.+!%-]{1,64}|)|\"[a-zA-Z0-9.+!% -]{1,64}\")@[a-zA-Z0-9][a-zA-Z0-9.-]+(.[a-z]{2,}|.[0-9]{1,})$')),
-    CONSTRAINT sys_UCE_UK UNIQUE(customer_email_address),
-    is_timber_member NUMBER(1) NOT NULL
-        CONSTRAINT SYS_ISTM_CK CHECK(is_timber_member IN(0,1)));
+    customer_email_address VARCHAR2(60) NOT NULL
+        CONSTRAINT SYS_CE_CK CHECK(regexp_like(customer_email_address,'[a-zA-Z0-9_\-]+@([a-zA-Z0-9_\-]+\.)+(com|org|edu|nz|au])')),
+    customer_city VARCHAR2(20) NOT NULL,
+    istimbermember NUMBER(1) NOT NULL
+        CONSTRAINT SYS_ISTM_CK CHECK(istimbermember IN(0,1)),
+    CONSTRAINT sys_UCE_UK UNIQUE(customer_email_address));
 CREATE TABLE TIM_parent_category(
     parent_category_number NUMBER CONSTRAINT SYS_PCN_PK PRIMARY KEY
 );
@@ -52,25 +54,31 @@ CREATE TABLE TIM_category(
 rem 
 CREATE TABLE TIM_supplier(
     supplier# NUMBER CONSTRAINT SYS_SUPP_PK PRIMARY KEY,
+    supplier_name VARCHAR2(20) NOT NULL,
     supplier_email VARCHAR2(50) NOT NULL
-        CONSTRAINT SYS_S_CK CHECK(regexp_like(supplier_email,'^(?:(?!.*?[.]{2})[a-zA-Z0-9](?:[a-zA-Z0-9.+!%-]{1,64}|)|\"[a-zA-Z0-9.+!% -]{1,64}\")@[a-zA-Z0-9][a-zA-Z0-9.-]+(.[a-z]{2,}|.[0-9]{1,})$')),
+        CONSTRAINT SYS_S_CK CHECK(regexp_like(supplier_email,'[a-zA-Z0-9_\-]+@([a-zA-Z0-9_\-]+\.)+(com|org|edu|nz|au])')),
     CONSTRAINT SYS_SE_UK UNIQUE(supplier_email),
     supplier_prov CHAR(2) NOT NULL
-        CONSTRAINT SYS_SUPP_CK CHECK(supplier_prov IN('AB','BC','MB','NS','NT','ON','PE','QC','SK','YT','NL','NB')));
+        CONSTRAINT SYS_SUPP_CK CHECK(supplier_prov IN('AB','BC','MB','NS','NT','ON','PE','QC','SK','YT','NL','NB')),
+    supplier_city VARCHAR2(20) NOT NULL);
 rem
 CREATE TABLE TIM_product(
     product# NUMBER CONSTRAINT SYS_PRO_PK PRIMARY KEY,
-    product_title VARCHAR2(50) NOT NULL,
-    product_description VARCHAR2(100) NOT NULL,
+    product_title VARCHAR2(100) NOT NULL,
+    product_description VARCHAR2(500) NOT NULL,
     product_price NUMBER(10,2) NOT NULL
         CONSTRAINT SYS_PP_CK CHECK(product_price > 0),
-    product_weight NUMBER(10,2) NOT NULL
+    product_weight NUMBER(3,2) NOT NULL
         CONSTRAINT SYS_PW_CK CHECK(product_weight > 0),
-    tex_exempt CHAR(1) NOT NULL
-        CONSTRAINT SYS_TE_CK CHECK(tex_exempt IN (0,1)),
-    category# NUMBER CONSTRAINT SYS_PC_PK REFERENCES TIM_category(category#),
-    order# NUMBER CONSTRAINT SYS_ORDER_PK REFERENCES TIM_order(order#));
+    istaxexempt CHAR(1) NOT NULL
+        CONSTRAINT SYS_TE_CK CHECK(istaxexempt IN (0,1)),
+    category# NUMBER CONSTRAINT SYS_PC_PK REFERENCES TIM_category(category#));
 rem
+CREATE TABLE TIM_product_order(
+    order# NUMBER CONSTRAINT SYS_ORDER_PROORDER_FK REFERENCES TIM_order(order#),
+    product# NUMBER CONSTRAINT SYS_PRO_PORD_FK REFERENCES TIM_product(product#),
+    CONSTRAINT SYS_CUSPRO_PRODOR_PK PRIMARY KEY(order#,product#)
+);
 CREATE TABLE TIM_product_supplier(
     supplier# NUMBER CONSTRAINT SYS_SPS_PK REFERENCES TIM_supplier(supplier#),
     product# NUMBER CONSTRAINT SYS_PPS_PK REFERENCES TIM_product(product#),
@@ -87,8 +95,5 @@ CREATE TABLE TIM_product_review(
     review_date DATE NOT NULL,
     product# NUMBER CONSTRAINT SYS_PPV_PK REFERENCES TIM_product(product#),
     customer# NUMBER CONSTRAINT SYS_CPR_PK REFERENCES TIM_customer(customer#));
-CREATE TABLE TIM_product_order(
-    product# NUMBER CONSTRAINT SYS_PPORDER_FK REFERENCES TIM_product(product#),
-    order# NUMBER CONSTRAINT SYS_ORDER_ORDER_FK REFERENCES TIM_order(order#),
-    CONSTRAINT SYS_PRODUCTORDER_PO_PK PRIMARY KEY(product#,order#));
+commit;
 spool off
