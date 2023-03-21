@@ -1,0 +1,50 @@
+SQL> rem
+SQL> DROP TABLE TIM_product_order;
+
+Table dropped.
+
+SQL> DROP TABLE TIM_product_supplier;
+
+Table dropped.
+
+SQL> DROP TABLE TIM_product;
+
+Table dropped.
+
+SQL> DROP TABLE TIM_product_review;
+DROP TABLE TIM_product_review
+           *
+ERROR at line 1:
+ORA-00942: table or view does not exist 
+
+
+SQL> DROP TABLE TIM_order;
+
+Table dropped.
+
+SQL> DROP TABLE TIM_supplier;
+
+Table dropped.
+
+SQL> DROP TABLE TIM_category;
+
+Table dropped.
+
+SQL> DROP TABLE TIM_Customer_timber;
+
+Table dropped.
+
+SQL> DROP TABLE TIM_parent_category;
+
+Table dropped.
+
+SQL> rem
+SQL> insert into TIM_Customer_timber(customer#,customer_street_address,customer_number,customer_prov,customer_postal_code,customer_email_address,city,istimbermember)
+  2  	 values(1333,'dssfdgd bdfb','234.567.8970','AB','A3A3A3','SAR@GMAIL.COM','MOGA',0);
+insert into TIM_Customer_timber(customer#,customer_street_address,customer_number,customer_prov,customer_postal_code,customer_email_address,city,istimbermember)
+            *
+ERROR at line 1:
+ORA-00942: table or view does not exist 
+
+
+SQL> spool off

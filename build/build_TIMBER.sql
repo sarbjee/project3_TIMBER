@@ -8,11 +8,11 @@ DROP TABLE TIM_product_review cascade constraints;
 DROP TABLE TIM_order cascade constraints;
 DROP TABLE TIM_supplier cascade constraints;
 DROP TABLE TIM_category cascade constraints;
-DROP TABLE TIM_customer cascade constraints;
+DROP TABLE TIM_Customer_timber cascade constraints;
 DROP TABLE TIM_parent_category cascade constraints;
 rem
 -- create tables
-CREATE TABLE TIM_customer(
+CREATE TABLE TIM_Customer_timber(
     customer# NUMBER CONSTRAINT SYS_CUST_PK PRIMARY KEY,
     customer_street_address VARCHAR2(200) NOT NULL,
     customer_prov CHAR(2) NOT NULL
@@ -23,7 +23,7 @@ CREATE TABLE TIM_customer(
         CONSTRAINT SYS_CP_CK CHECK (regexp_like(customer_phone,'[0-9]{3}\.[0-9]{3}\.[0-9]{4}')),
     customer_email_address VARCHAR2(60) NOT NULL
         CONSTRAINT SYS_CE_CK CHECK(regexp_like(customer_email_address,'[a-zA-Z0-9_\-]+@([a-zA-Z0-9_\-]+\.)+(com|org|edu|nz|au])')),
-    customer_city VARCHAR2(20) NOT NULL,
+    city VARCHAR2(20) NOT NULL,
     istimbermember NUMBER(1) NOT NULL
         CONSTRAINT SYS_ISTM_CK CHECK(istimbermember IN(0,1)),
     CONSTRAINT sys_UCE_UK UNIQUE(customer_email_address));
@@ -41,10 +41,10 @@ CREATE TABLE TIM_order(
         CONSTRAINT SYS_ITEMS_CK CHECK(order_items>0),
     shipping_prov CHAR(2) NOT NULL
         CONSTRAINT SYS_O_CK CHECK(shipping_prov IN('AB','BC','MB','NS','NT','ON','PE','QC','SK','YT','NL','NB')),
-    customer_number NUMBER);
+    customer# NUMBER);
 rem
 ALTER TABLE TIM_order
-    ADD CONSTRAINT SYS_O_FK FOREIGN KEY(customer_number) REFERENCES TIM_customer(customer#)
+    ADD CONSTRAINT SYS_O_FK FOREIGN KEY(customer#) REFERENCES TIM_Customer_timber(customer#)
     ADD CONSTRAINT sys_OR_PK PRIMARY KEY(order#);
 rem
 CREATE TABLE TIM_category(
@@ -94,6 +94,6 @@ CREATE TABLE TIM_product_review(
     comments VARCHAR2(500),
     review_date DATE NOT NULL,
     product# NUMBER CONSTRAINT SYS_PPV_PK REFERENCES TIM_product(product#),
-    customer# NUMBER CONSTRAINT SYS_CPR_PK REFERENCES TIM_customer(customer#));
+    customer# NUMBER CONSTRAINT SYS_CPR_PK REFERENCES TIM_Customer_timber(customer#));
 commit;
 spool off
